@@ -30,7 +30,7 @@
     var deltaTheta = 0, deltaPhi = 0;
     var target = new THREE.Vector3(0, 0, 0);
     var radius = 3000;
-    var rotateSpeed = {mouse: 3, touch: 1};
+    var rotateSpeed = {mouse: 3, touch: 3};
     var pinchSpeed = 0.1;
 
     var parameters = {
