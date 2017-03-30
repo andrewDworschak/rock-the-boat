@@ -1,4 +1,4 @@
-(function () {
+$(document).ready(function () {
     if (!Detector.webgl) {
 
         Detector.addGetWebGLMessage();
@@ -26,39 +26,33 @@
     var pinch = false;
     var pinchLength = 0;
     var deltaPinch = 0;
-    var theta = 0, phi = Math.PI/10;
+    var theta = 0, phi = Math.PI / 10;
     var deltaTheta = 0, deltaPhi = 0;
     var target = new THREE.Vector3(0, 0, 0);
-    var radius = 3000;
+    var radius = 300;
     var rotateSpeed = {mouse: 3, touch: 1};
     var pinchSpeed = 0.1;
-	
-	//Draw mode variables
-	var subdivs = 50;
-	var ymatx = Array(subdivs);
-	var centreOfMass = 0;
-	var Izz = 0;
-	
-	//Boat variables
-	var h = 0;
-	var boat_theta = 0;
-	var V_sub=0;
-	var B_x=0;
-	var B_y=0;
-	var R=0;
-	var net_force = 0;
-	var net_torque = 0;
-	var volume = 0;
-	var accel_h = 0;
-	var speed_h = 0;
-	var accel_theta = 0;
-	var speed_theta = 0;
-	
-	//Situation variables
-	var fluid_density = 2;
-	var delta_t = 1;
-	
-	
+
+    //Boat variables
+    var h = 0;
+    var boat_theta = 0;
+    var V_sub = 0;
+    var B_x = 0;
+    var B_y = 0;
+    var R = 0;
+    var net_force = 0;
+    var net_torque = 0;
+    var volume = 0;
+    var accel_h = 0;
+    var speed_h = 0;
+    var accel_theta = 0;
+    var speed_theta = 0;
+
+    //Situation variables
+    var fluid_density = 2;
+    var delta_t = 1;
+
+
     var parameters = {
         width: 2000,
         height: 2000,
@@ -73,14 +67,9 @@
 
     init();
     animate();
-	
-	var drawModeChecker = false;
-	var drawMode = false;
 
     function init() {
-
-        container = document.createElement('div');
-        document.body.appendChild(container);
+        container = document.getElementById('webGL-canvas');
 
         renderer = new THREE.WebGLRenderer();
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -88,6 +77,7 @@
         container.appendChild(renderer.domElement);
 
         scene = new THREE.Scene();
+        window.scene = scene;
 
         camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.5, 3000000);
         camera.up.set(0, 1, 0);
@@ -183,7 +173,7 @@
         });
 
         sphere = new THREE.Mesh(geometry, material);
-        scene.add(sphere);
+        //scene.add(sphere);
 
 
         window.addEventListener('mousedown', onMouseDown, false);
@@ -221,17 +211,6 @@
 
         mouse.x = event.clientX;
         mouse.y = event.clientY;
-		
-		if(drawMode){
-			subdiv = Math.round(mouse.y*subdivs/window.innerHeight);
-			if(ymatx[subdiv] == -1){
-				ymatx[subdiv] = Math.abs((mouse.x-window.innerWidth/2)*subdivs/window.innerHeight);
-			}
-		}
-		//Enter draw mode when draw button clicked
-		else if(mouse.x>window.innerWidth*8/10 && mouse.x<window.innerWidth && mouse.y>window.innerHeight*8/10 && mouse.y<window.innerHeight){
-			drawModeChecker = true;
-		}
     }
 
     function calcPinchLength(e) {
@@ -261,27 +240,7 @@
     }
 
     function onMouseMove(event) {
-        if(drawMode){
-			mouse.x = event.clientX;
-            mouse.y = event.clientY;
-			subdiv = Math.round(mouse.y*subdivs/window.innerHeight);
-			if(ymatx[subdiv] == -1){
-				ymatx[subdiv] = Math.abs((mouse.x-window.innerWidth/2)*subdivs/window.innerHeight);
-				if(ymatx[subdiv+1] != -1){
-					//document.body.appendChild(createLine(ymatx[subdiv+1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv+1)*window.innerHeight/subdivs, ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));
-					//document.body.appendChild(createLine(-ymatx[subdiv+1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv+1)*window.innerHeight/subdivs, -ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));
-				}
-				if(ymatx[subdiv-1] != -1){
-					//document.body.appendChild(createLine(ymatx[subdiv-1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv-1)*window.innerHeight/subdivs, ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));
-					//document.body.appendChild(createLine(-ymatx[subdiv-1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv-1)*window.innerHeight/subdivs, -ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));
-				
-				}
-			}
-		}
-		else if(drawModeChecker){
-			//Do nothing
-		}
-		else if (mouseDown) {
+        if (mouseDown) {
             deltaMouse.x = event.clientX - mouse.x;
             deltaMouse.y = event.clientY - mouse.y;
 
@@ -327,50 +286,6 @@
     }
 
     function onMouseUp(event) {
-		if(drawMode){
-			drawMode = false;
-			console.log("Draw Mode Ended");
-			var sumxy = 0;
-			var sumx = 0;
-			var integralX = 0;
-			var integralY = 0;
-			for(subdiv=0; subdiv<subdivs-1; subdiv++){
-				
-				if(ymatx[subdiv] != -1){
-					sumxy += ymatx[subdiv]*subdiv;
-					sumx += ymatx[subdiv];
-					integralX += 2*Math.pow(ymatx[subdiv],3)/3;
-				}
-				if(ymatx[subdiv]!=-1 && ymatx[subdiv+1] != -1){
-				document.body.appendChild(createLine(ymatx[subdiv+1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv+1)*window.innerHeight/subdivs, ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));	
-				document.body.appendChild(createLine(-ymatx[subdiv+1]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv+1)*window.innerHeight/subdivs, -ymatx[subdiv]*window.innerHeight/subdivs + window.innerWidth/2,(subdiv)*window.innerHeight/subdivs));
-			}
-			}
-			centreOfMass = sumxy/sumx;
-			volume = sumx;
-			console.log(centreOfMass);
-			document.body.appendChild(createPointElement(window.innerWidth/2, centreOfMass*window.innerHeight/subdivs));
-			for(subdiv=0; subdiv<subdivs; subdiv++){
-				
-				if(ymatx[subdiv] != -1){
-					integralY += 2 * ymatx[subdiv] * Math.pow((subdiv-centreOfMass),2);
-				}
-			}
-			Izz = integralX+integralY;
-			console.log(Izz);
-			
-		}
-		
-		else if(drawModeChecker){
-			drawModeChecker = false;
-			if(mouse.x>window.innerWidth*8/10 && mouse.x<window.innerWidth && mouse.y>window.innerHeight*8/10 && mouse.y<window.innerHeight){
-				drawMode = true;
-				ymatx = new Array(subdivs);
-				for (i = 0; i < subdivs; i++){
-					ymatx[i]=-1;
-				}
-			}
-		}
         disposeListeners(event);
     }
 
@@ -418,6 +333,10 @@
         sphere.rotation.x = time * 0.5;
         sphere.rotation.z = time * 0.51;
 
+        if (window.boat != undefined) {
+            window.boat.rotation.z = Math.sin(time)*Math.PI/8;
+        }
+
         if (mouseDown || touchDown) {
             camera.position.x = radius * Math.cos(phi) * Math.sin(theta);
             camera.position.y = radius * Math.sin(phi);
@@ -430,87 +349,42 @@
         water.render();
         renderer.render(scene, camera);
     }
-	
-	function createLineElement(x, y, length, angle) {
-    var line = document.createElement("div");
-    var styles = 'border: 3px solid brown; '
-               + 'width: ' + length + 'px; '
-               + 'height: 0px; '
-               + '-moz-transform: rotate(' + angle + 'rad); '
-               + '-webkit-transform: rotate(' + angle + 'rad); '
-               + '-o-transform: rotate(' + angle + 'rad); '  
-               + '-ms-transform: rotate(' + angle + 'rad); '  
-               + 'position: absolute; '
-               + 'top: ' + y + 'px; '
-               + 'left: ' + x + 'px; ';
-    line.setAttribute('style', styles);  
-    return line;
-}
 
-function createPointElement(x, y) {
-    var point = document.createElement("div");
-    var styles = 'border: 5px solid red; '
-               + 'width: 0px; '
-               + 'height: 0px; ' 
-               + 'position: absolute; '
-               + 'top: ' + y + 'px; '
-               + 'left: ' + x + 'px; ';
-    point.setAttribute('style', styles);  
-    return point;
-}
+    function moveBoat() {
+        //Vsub = Math.max(ymatx[subdiv]+Math.min(ymatx[subdiv],(subdiv-h)/tan_theta)) summed over y
 
-function createLine(x1, y1, x2, y2) {
-    var a = x1 - x2,
-        b = y1 - y2,
-        c = Math.sqrt(a * a + b * b);
+        V_sub = 0;
+        var integralBx = 0;
+        var integralBy = 0;
+        var alpha = 0;
+        var tan_theta = Math.tan(Math.abs(boat_theta));
+        for (subdiv = 0; subdiv < subdivs; subdiv++) {
+            if (ymatx[subdiv] != -1) {
+                V = Math.max(ymatx[subdiv] + Math.min(ymatx[subdiv], (subdiv - h) / tan_theta));
+                V_sub += V;
+                integralBx += V * (V / 2 - ymatx[subdiv]);
+                integralBy += V * (subdiv - centreOfMass);
 
-    var sx = (x1 + x2) / 2,
-        sy = (y1 + y2) / 2;
+            }
+        }
+        B_x = integralBx / V_sub;
+        B_y = integralBy / V_sub;
+        alpha = Math.abs(boat_theta) - Math.atan(B_x / B_y);
+        R = Math.sqrt(Math.pow(B_x, 2) + Math.pow(B_y, 2)) * Math.sin(alpha); //ccw torque = positive
+        if (boat_theta < 0) {
+            B_x = -B_x;
+            B_y = -B_y;
+            R = -R;
+        }
+        var buoyant_force = V_sub * fluid_density;
+        net_force = volume - buoyant_force;
+        accel_h = net_force / volume;
+        net_torque = buoyant_force * R;
+        accel_theta = net_torque / Izz;
+        h = h + speed_h * delta_t;
+        boat_theta = boat_theta + speed_theta * delta_t;
+        speed_h = speed_h + accel_h * delta_t;
+        speed_theta = speed_theta + accel_theta * delta_t;
 
-    var x = sx - c / 2,
-        y = sy;
-
-    var alpha = Math.PI - Math.atan2(-b, a);
-
-    return createLineElement(x, y, c, alpha);
-}
-	
-	function moveBoat(){
-		//Vsub = Math.max(ymatx[subdiv]+Math.min(ymatx[subdiv],(subdiv-h)/tan_theta)) summed over y
-		
-		V_sub = 0;
-		var integralBx = 0;
-		var integralBy = 0;
-		var alpha = 0;
-		var tan_theta = Math.tan(Math.abs(boat_theta));
-		for(subdiv=0; subdiv<subdivs; subdiv++){
-				if(ymatx[subdiv] != -1){
-					V = Math.max(ymatx[subdiv]+Math.min(ymatx[subdiv],(subdiv-h)/tan_theta));
-					V_sub+=V;
-					integralBx+=V*(V/2-ymatx[subdiv]);
-					integralBy+=V*(subdiv-centreOfMass);
-					
-				}
-		}
-		B_x = integralBx/V_sub;
-		B_y = integralBy/V_sub;
-		alpha = Math.abs(boat_theta)-Math.atan(B_x/B_y);
-		R = Math.sqrt(Math.pow(B_x,2)+Math.pow(B_y,2))*Math.sin(alpha); //ccw torque = positive
-		if(boat_theta<0){
-			B_x = -B_x;
-			B_y = -B_y;
-			R = -R;
-		}
-		var buoyant_force = V_sub*fluid_density;
-		net_force = volume - buoyant_force;
-		accel_h = net_force/volume;
-		net_torque = buoyant_force*R;
-		accel_theta = net_torque/Izz;
-		h = h+speed_h*delta_t;
-		boat_theta = boat_theta+speed_theta*delta_t;
-		speed_h = speed_h + accel_h*delta_t;
-		speed_theta = speed_theta + accel_theta*delta_t;
-		
-	}
-
-})();
+    }
+});
