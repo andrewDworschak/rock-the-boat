@@ -16,6 +16,10 @@ function drawBoat() {
     if (window.boat != undefined) {
         window.scene.remove(window.boat);
         delete window.boat;
+		delete window.ymatx;
+		delete window.centreOfMass
+		delete window.Izz;
+		delete window.volume;
         console.log(window.scene);
         console.log(window.boat);
     }
@@ -75,7 +79,8 @@ function drawBoat() {
             }
         }
         centreOfMass = sumxy / sumx;
-        volume = sumx;
+		window.centreOfMass = centreOfMass;
+        window.volume = sumx;
 
         canvas.appendChild(createPointElement(window.innerWidth / 2, centreOfMass * window.innerHeight / subdivs));
         for (subdiv = 0; subdiv < subdivs; subdiv++) {
@@ -85,6 +90,7 @@ function drawBoat() {
             }
         }
         Izz = integralX + integralY;
+		window.Izz = Izz;
 
         for (var ii = 0; ii < ymatx.length; ++ii) {
             if (ymatx[ii] != -1) {
@@ -110,6 +116,8 @@ function drawBoat() {
         boat.add(boatMesh);
         window.boat = boat;
         window.scene.add(boat);
+		
+		window.ymatx = ymatx;
         console.log(window.scene);
         console.log(window.boat);
 
