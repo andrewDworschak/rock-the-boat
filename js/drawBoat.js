@@ -73,16 +73,11 @@ function drawBoat() {
                 sumx += ymatx[subdiv];
                 integralX += 2 * Math.pow(ymatx[subdiv], 3) / 3;
             }
-            if (ymatx[subdiv] != -1 && ymatx[subdiv + 1] != -1) {
-                canvas.appendChild(createLine(ymatx[subdiv + 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv + 1) * window.innerHeight / subdivs, ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-                canvas.appendChild(createLine(-ymatx[subdiv + 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv + 1) * window.innerHeight / subdivs, -ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-            }
         }
         centreOfMass = sumxy / sumx;
 		window.centreOfMass = centreOfMass;
         window.volume = sumx;
 
-        canvas.appendChild(createPointElement(window.innerWidth / 2, centreOfMass * window.innerHeight / subdivs));
         for (subdiv = 0; subdiv < subdivs; subdiv++) {
 
             if (ymatx[subdiv] != -1) {
