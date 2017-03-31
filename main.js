@@ -52,6 +52,9 @@ $(document).ready(function () {
     var fluid_density = 1.5;
     var delta_t = 0.02;
 	var lastTime = 1;
+	var damping = 0.2;
+	var water_h = 0;
+	var water_theta = 0;
 
 
     var parameters = {
@@ -101,7 +104,7 @@ $(document).ready(function () {
             textureWidth: 512,
             textureHeight: 512,
             waterNormals: waterNormals,
-            alpha: 1.0,
+            alpha: 0.8,
             sunDirection: light.position.clone().normalize(),
             sunColor: 0xffffff,
             waterColor: 0x001e0f,
@@ -161,20 +164,6 @@ $(document).ready(function () {
         );
 
         scene.add(skyBox);
-
-        var geometry = new THREE.IcosahedronGeometry(400, 4);
-        for (var i = 0, j = geometry.faces.length; i < j; i++) {
-            geometry.faces[i].color.setHex(Math.random() * 0xffffff);
-        }
-
-        var material = new THREE.MeshPhongMaterial({
-            vertexColors: THREE.FaceColors,
-            shininess: 100,
-            envMap: cubeMap
-        });
-
-        sphere = new THREE.Mesh(geometry, material);
-        //scene.add(sphere);
 
 
         window.addEventListener('mousedown', onMouseDown, false);
@@ -329,12 +318,9 @@ $(document).ready(function () {
 
     function render() {
         var time = performance.now() * 0.001;
-		//delta_t = time-lastTime;
-		lastTime = time;
-
-        sphere.position.y = Math.sin(time) * 500 + 250;
-        sphere.rotation.x = time * 0.5;
-        sphere.rotation.z = time * 0.51;
+		
+		water_h = 0*(1-Math.cos(time));
+		water_theta = 0*Math.sin(time);
 
         if (window.boat != undefined) {
 			moveBoat();
@@ -342,8 +328,8 @@ $(document).ready(function () {
 			window.boat.position.y = h;
         }
 		else{
-			h=0;
-			boat_theta=0;
+			h=water_h;
+			boat_theta=water_theta;
 			accel_h = 0;
 			speed_h = 0;
 			accel_theta = 0;
@@ -441,6 +427,8 @@ $(document).ready(function () {
         var integralBx = 0;
         var integralBy = 0;
         var alpha = 0;
+		h = h-water_h;
+		boat_theta = boat_theta-water_theta;
         //var tan_theta = Math.tan(Math.abs(boat_theta));
         for (subdiv = 0; subdiv < window.ymatx.length; subdiv++) {
             if (window.ymatx[subdiv] != -1) {
@@ -480,19 +468,23 @@ $(document).ready(function () {
         
 		}
         var buoyant_force = V_sub * fluid_density;
-        net_force =  10*(buoyant_force - window.volume);
+        net_force =  10*(buoyant_force - 2*window.volume);
         accel_h = net_force / window.volume;
         net_torque = 200*buoyant_force * R;
         accel_theta = net_torque / window.Izz;
         
         speed_h = speed_h + accel_h * delta_t;
         speed_theta = (speed_theta + accel_theta * delta_t);
-		h = h + speed_h * delta_t;
-        boat_theta = boat_theta + speed_theta * delta_t;
+		speed_h = speed_h*(1-damping*delta_t);
+		speed_theta = speed_theta*(1-damping*delta_t);
+		h = h + water_h + speed_h * delta_t;
+        boat_theta = boat_theta + water_theta + speed_theta * delta_t;
 		//console.log(window.Izz);
 		//console.log(window.centreOfMass);
 		//console.log(V_sub);
 		//console.log(h);
+		//console.log(water_h);
+		//console.log(water_theta);
 		//console.log(boat_theta);
 		//console.log(window.volume);
     }
