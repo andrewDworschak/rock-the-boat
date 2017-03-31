@@ -46,10 +46,11 @@ $(document).ready(function () {
     var speed_h = 0;
     var accel_theta = 0;
     var speed_theta = 0.03;
+	var g = 10;
 
     //Situation variables
     var fluid_density = 1.5;
-    var delta_t = 1;
+    var delta_t = 0.02;
 	var lastTime = 1;
 
 
@@ -328,7 +329,7 @@ $(document).ready(function () {
 
     function render() {
         var time = performance.now() * 0.001;
-		delta_t = time-lastTime;
+		//delta_t = time-lastTime;
 		lastTime = time;
 
         sphere.position.y = Math.sin(time) * 500 + 250;
@@ -362,6 +363,77 @@ $(document).ready(function () {
         renderer.render(scene, camera);
     }
 
+    /*function moveBoat() {
+        //Vsub = Math.max(window.ymatx[subdiv]+Math.min(window.ymatx[subdiv],(subdiv-h)/tan_theta)) summed over y
+		
+        V_sub = 0;
+		var next_h = h+speed_h*delta_t;
+		var next_theta = boat_theta+speed_theta*delta_t;
+        
+		integralCalc(h, boat_theta);
+		var accel_now_h = accel_h;
+		var accel_now_theta = accel_theta;
+		
+		integralCalc(next_h, boat_theta);
+		var accel_nexth_h = accel_h;
+		var accel_nexth_theta = accel_theta;
+		
+		integralCalc(h, next_theta);
+		var accel_nextt_h = accel_h;
+		var accel_nextt_theta = accel_theta;
+		
+		accel_h = g - (accel_nexth_h-accel_now_h)/delta_t;
+		accel_theta = (accel_now_theta-accel_nextt_theta)/delta_t;
+		
+        speed_h = speed_h + accel_h * delta_t;
+        speed_theta = speed_theta + accel_theta * delta_t;
+		h = h + speed_h * delta_t;
+        boat_theta = boat_theta + speed_theta * delta_t;
+		
+		console.log(h);
+		console.log(speed_h);
+		console.log(accel_h);
+		//console.log(window.centreOfMass);
+		//console.log(V_sub);
+		//console.log(accel_h);
+		//console.log(boat_theta);
+		//console.log(window.volume);
+    }
+	
+	function integralCalc(b_h, b_theta){
+		var integralBx = 0;
+        var integralBy = 0;
+        var alpha = 0;
+		
+        var tan_theta = Math.tan((b_theta));
+        for (subdiv = 0; subdiv < window.ymatx.length; subdiv++) {
+            if (window.ymatx[subdiv] != -1) {
+                V = Math.max(window.ymatx[subdiv] + Math.min(window.ymatx[subdiv], (subdiv - window.centreOfMass - b_h) / tan_theta), 0);
+                V_sub += V;
+                integralBx += V * (-V/2 + window.ymatx[subdiv]);
+                integralBy -= V * (subdiv - window.centreOfMass);
+
+            }
+        }
+		if(V_sub==0){
+			alpha = 0;
+			R = 0;
+		}
+		else{
+			alpha = Math.abs(boat_theta) - Math.atan(B_x / B_y);
+			R = Math.sqrt(Math.pow(B_x, 2) + Math.pow(B_y, 2)) * Math.sin(alpha); //ccw torque = positive
+        
+		}
+        if (boat_theta > 0) {
+            R = -R;
+        }
+		var stuff = -Math.sin(b_theta)*integralBx + Math.cos(b_theta)*integralBy + b_h*V_sub;
+		accel_theta = (stuff)*g*fluid_density/window.Izz;
+		accel_h = g*fluid_density/window.volume*(stuff);
+	}*/
+	
+	
+
     function moveBoat() {
         //Vsub = Math.max(window.ymatx[subdiv]+Math.min(window.ymatx[subdiv],(subdiv-h)/tan_theta)) summed over y
 
@@ -369,36 +441,46 @@ $(document).ready(function () {
         var integralBx = 0;
         var integralBy = 0;
         var alpha = 0;
-        var tan_theta = Math.tan(Math.abs(boat_theta));
+        //var tan_theta = Math.tan(Math.abs(boat_theta));
         for (subdiv = 0; subdiv < window.ymatx.length; subdiv++) {
             if (window.ymatx[subdiv] != -1) {
-                V = Math.max(window.ymatx[subdiv] + Math.min(window.ymatx[subdiv], (subdiv - window.centreOfMass - h) / tan_theta), 0);
+				var d_minus = -Math.sin(boat_theta)*window.ymatx[subdiv]+Math.cos(boat_theta)*(subdiv-window.centreOfMass);
+				var d_plus = Math.sin(boat_theta)*window.ymatx[subdiv]+Math.cos(boat_theta)*(subdiv-window.centreOfMass);
+				if(d_plus != d_minus){
+					var d_large = Math.max(d_plus,d_minus);
+					var d_small = Math.min(d_plus,d_minus);
+					V = Math.max(Math.min(2*window.ymatx[subdiv]*(d_large-h)/(d_large-d_small),2*window.ymatx[subdiv]),0);
+					if(d_plus>d_minus){
+						integralBx += V*(window.ymatx[subdiv]-V/2);
+					}
+					else {
+						integralBx += V*(-window.ymatx[subdiv]+V/2);
+					}
+				}
+				else if (d_minus<h){
+					V=0;
+				}
+				else {
+					V=2*window.ymatx[subdiv];
+				}
                 V_sub += V;
-                integralBx += V * (V / 2 - window.ymatx[subdiv]);
-                integralBy += V * (subdiv - window.centreOfMass);
+                integralBy -= V * (subdiv - window.centreOfMass);
 
             }
         }
 		if(V_sub==0){
 			B_x = 0;
 			B_y = 0;
-			alpha = 0;
 			R = 0;
 		}
 		else{
 			B_x = integralBx / V_sub;
 			B_y = integralBy / V_sub;
-			alpha = Math.abs(boat_theta) - Math.atan(B_x / B_y);
-			R = Math.sqrt(Math.pow(B_x, 2) + Math.pow(B_y, 2)) * Math.sin(alpha); //ccw torque = positive
+			R = -Math.sin(boat_theta)*B_y-Math.cos(boat_theta)*B_x; //cw torque positive
         
 		}
-        if (boat_theta > 0) {
-            B_x = -B_x;
-            B_y = -B_y;
-            R = -R;
-        }
         var buoyant_force = V_sub * fluid_density;
-        net_force =  5*(buoyant_force - window.volume);
+        net_force =  10*(buoyant_force - window.volume);
         accel_h = net_force / window.volume;
         net_torque = 200*buoyant_force * R;
         accel_theta = net_torque / window.Izz;
