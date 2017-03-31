@@ -15,13 +15,15 @@ function drawBoat() {
     canvas.addEventListener('mousedown', dbOnMouseDown, false);
     if (window.boat != undefined) {
         window.scene.remove(window.boat);
+        window.scene.remove(window.CoM);
+        window.scene.remove(window.BoM);
         delete window.boat;
-		delete window.ymatx;
-		delete window.centreOfMass
-		delete window.Izz;
-		delete window.volume;
-        console.log(window.scene);
-        console.log(window.boat);
+        delete window.ymatx;
+        delete window.centreOfMass;
+        delete window.Izz;
+        delete window.volume;
+        delete window.CoM;
+        delete window.BoM;
     }
 
     function dbOnMouseDown(event) {
@@ -31,7 +33,7 @@ function drawBoat() {
         mouse.y = event.clientY;
 
         canvas.addEventListener('mousemove', dbOnMouseMove, false);
-        //canvas.addEventListener('mouseout', dbOnMouseOut, false);
+        canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
         canvas.addEventListener('mouseup', dbOnMouseUp, false);
 
         ymatx = Array(subdivs).fill(-1);
@@ -40,6 +42,10 @@ function drawBoat() {
         if (ymatx[subdiv] == -1) {
             ymatx[subdiv] = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
         }
+    }
+
+    function dbOnMouseLeave() {
+        dbOnMouseUp();
     }
 
     function dbOnMouseMove(event) {
@@ -75,7 +81,7 @@ function drawBoat() {
             }
         }
         centreOfMass = sumxy / sumx;
-		window.centreOfMass = centreOfMass;
+        window.centreOfMass = centreOfMass;
         window.volume = sumx;
 
         for (subdiv = 0; subdiv < subdivs; subdiv++) {
@@ -85,7 +91,7 @@ function drawBoat() {
             }
         }
         Izz = integralX + integralY;
-		window.Izz = Izz;
+        window.Izz = Izz;
 
         for (var ii = 0; ii < ymatx.length; ++ii) {
             if (ymatx[ii] != -1) {
@@ -106,24 +112,41 @@ function drawBoat() {
         var translationMat = new THREE.Matrix4().makeTranslation(0, centreOfMass, 100);
         var transformation = new THREE.Matrix4().multiplyMatrices(translationMat, rotationMat);
         boatGeo.applyMatrix(transformation);
-        var boatMesh = new THREE.Mesh(boatGeo, new THREE.MeshPhongMaterial({color: '#8B4513', shininess: 100}));
+        var boatTexture = new THREE.TextureLoader().load('textures/boatTexture.jpg');
+        boatTexture.wrapS = boatTexture.wrapT = THREE.RepeatWrapping;
+        boatTexture.repeat.set(0.002, 0.002);
+        var boatMesh = new THREE.Mesh(boatGeo, new THREE.MeshPhongMaterial({
+            map: boatTexture,
+            shininess: 75,
+            specular: 0xaaaaaa
+        }));
         var boat = new THREE.Object3D();
         boat.add(boatMesh);
         window.boat = boat;
         window.scene.add(boat);
-		
-		window.ymatx = ymatx;
-        console.log(window.scene);
-        console.log(window.boat);
+
+        var geometry = new THREE.SphereGeometry(2, 32, 32);
+        var com = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0xffff00}));
+        com.position.set(0, centreOfMass, 110);
+        window.CoM = com;
+        window.scene.add(window.CoM);
+
+        var bom = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0xffffff}));
+        bom.position.set(0, 0, 110);
+        window.BoM = bom;
+        window.scene.add(window.BoM);
+
+        window.ymatx = ymatx;
 
         $('#boat-canvas').hide();
         $('#webGL-canvas').css('zIndex', '1');
 
-        $('#boat-canvas').html(' Draw, draw, draw your boat ... gently ');
+        $('#boat-canvas').html(' Draw, draw, draw your boat <br> Gently on the screen ');
 
         canvas.removeEventListener('mousemove', dbOnMouseMove, false);
         canvas.removeEventListener('mouseup', dbOnMouseUp, false);
         canvas.removeEventListener('mousedown', dbOnMouseDown, false);
+        canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
     }
 
     function createLineElement(x, y, length, angle) {
