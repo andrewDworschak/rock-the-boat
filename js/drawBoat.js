@@ -6,8 +6,14 @@ function drawBoat() {
     var mouse = {x: 0, y: 0};
     var canvas = document.getElementById('boat-canvas');
 
-    var ymatx = Array(subdivs).fill(-1);
+    var ymatx = [];
     var coors = [];
+	var crossovers = 10;
+	window.crossovers = crossovers;
+	var lastSubdiv = 0;
+	var lastPos = 0;
+	var newPos = 0;
+	var drawOrder = [];
 
     $('#boat-canvas').show();
     $('#webGL-canvas').css('zIndex', '-1');
@@ -36,12 +42,16 @@ function drawBoat() {
         canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
         canvas.addEventListener('mouseup', dbOnMouseUp, false);
 
-        ymatx = Array(subdivs).fill(-1);
+        for (i=0; i<subdivs; i++){
+			ymatx[i]= [];
+		}
         coors = [];
         var subdiv = Math.round(mouse.y * subdivs / window.innerHeight);
-        if (ymatx[subdiv] == -1) {
-            ymatx[subdiv] = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
-        }
+        
+		lastPos = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
+		//ymatx[subdiv][ymatx[subdiv].length] = lastPos;
+		lastSubdiv = subdiv;
+		//drawOrder[drawOrder.length]=subdiv;
     }
 
     function dbOnMouseLeave() {
@@ -53,16 +63,26 @@ function drawBoat() {
         mouse.y = event.clientY;
 
         subdiv = Math.round(mouse.y * subdivs / window.innerHeight);
-        if (ymatx[subdiv] == -1) {
-            ymatx[subdiv] = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
-            if (ymatx[subdiv + 1] != -1) {
-                canvas.appendChild(createLine(ymatx[subdiv + 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv + 1) * window.innerHeight / subdivs, ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-                canvas.appendChild(createLine(-ymatx[subdiv + 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv + 1) * window.innerHeight / subdivs, -ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-            }
-            if (ymatx[subdiv - 1] != -1) {
-                canvas.appendChild(createLine(ymatx[subdiv - 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv - 1) * window.innerHeight / subdivs, ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-                canvas.appendChild(createLine(-ymatx[subdiv - 1] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv - 1) * window.innerHeight / subdivs, -ymatx[subdiv] * window.innerHeight / subdivs + window.innerWidth / 2, (subdiv) * window.innerHeight / subdivs));
-            }
+        if (subdiv != lastSubdiv) {
+            newPos = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
+			if(lastSubdiv>subdiv){
+				for(i=lastSubdiv-1; i>=subdiv; i--){
+					ymatx[i][ymatx[i].length]=lastPos*(i-subdiv)/(lastSubdiv-subdiv) + newPos*(lastSubdiv-i)/(lastSubdiv-subdiv);
+					drawOrder[drawOrder.length]=i;
+				}
+			}
+			else{
+				for(i=lastSubdiv+1; i<=subdiv; i++){
+					ymatx[i][ymatx[i].length]=lastPos*(subdiv-i)/(subdiv-lastSubdiv) + newPos*(i-lastSubdiv)/(subdiv-lastSubdiv);
+					drawOrder[drawOrder.length]=i;
+				}
+				
+			}
+            
+            canvas.appendChild(createLine(newPos * window.innerHeight / subdivs + window.innerWidth / 2, subdiv * window.innerHeight / subdivs, lastPos * window.innerHeight / subdivs + window.innerWidth / 2, lastSubdiv * window.innerHeight / subdivs));
+            canvas.appendChild(createLine(-newPos * window.innerHeight / subdivs + window.innerWidth / 2, subdiv * window.innerHeight / subdivs, -lastPos * window.innerHeight / subdivs + window.innerWidth / 2, lastSubdiv * window.innerHeight / subdivs));
+			lastPos = newPos;
+			lastSubdiv = subdiv;
         }
     }
 
@@ -71,41 +91,81 @@ function drawBoat() {
         var sumx = 0;
         var integralX = 0;
         var integralY = 0;
+		
+		for (i = 0; i < drawOrder.length; i++) {
+            var numRepeats = 0;
+			for(j=0; j<i; j++){
+				if(drawOrder[i]==drawOrder[j]){
+					numRepeats++;
+				}
+			}
+			//console.log(ymatx);
+			if(numRepeats!=0){
+				//console.log(numRepeats);
+			}
+			//console.log(drawOrder.length);
+            coors.push(new THREE.Vector2(ymatx[drawOrder[i]][numRepeats], drawOrder[i]));
+        }
+		//console.log(coors);
+		//console.log(drawOrder);
+		for (var ii = 0; ii > coors.length; ++ii) {
+            for (var jj = 0; jj < i; ++jj) {
+            if(coors[ii].y == coors[jj].y){
+				coors.splice(ii,1);
+				console.log("eep");
+				break;
+			}
+			}			
+        }
+		
+        for (var ii = coors.length - 1; ii > -1; --ii) {
+            var blah = coors[ii];
+            coors.push(new THREE.Vector2(-blah.x, blah.y));
+        }
+		
+		coors.push(new THREE.Vector2(coors[0].x, coors[0].y));
+        var shape = new THREE.Shape(coors);
+		
+		for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
+			ymatx[subdiv] = ymatx[subdiv].sort(function (a, b) {  return b - a;  });
+		}
 
         for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
-
-            if (ymatx[subdiv] != -1) {
-                sumxy += ymatx[subdiv] * subdiv;
-                sumx += ymatx[subdiv];
-                integralX += 2 * Math.pow(ymatx[subdiv], 3) / 3;
-            }
+			for(i=0; i<crossovers; i++){
+				if(ymatx[subdiv].length>i){
+					if(i%2==0){
+						sumxy += ymatx[subdiv][i] * subdiv;
+						sumx += ymatx[subdiv][i];
+						integralX += 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
+					}
+					else{
+						sumxy -= ymatx[subdiv][i] * subdiv;
+						sumx -= ymatx[subdiv][i];
+						integralX -= 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
+					}
+				}
+			}
         }
         centreOfMass = sumxy / sumx;
         window.centreOfMass = centreOfMass;
         window.volume = sumx;
 
         for (subdiv = 0; subdiv < subdivs; subdiv++) {
-
-            if (ymatx[subdiv] != -1) {
-                integralY += 2 * ymatx[subdiv] * Math.pow((subdiv - centreOfMass), 2);
-            }
+			for(i=0; i<crossovers; i++){
+				if(ymatx[subdiv].length>i){
+					if(i%2==0){
+						integralY += 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
+					}
+					else{
+						integralY -= 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
+					}
+				}
+			}
         }
         Izz = integralX + integralY;
         window.Izz = Izz;
 
-        for (var ii = 0; ii < ymatx.length; ++ii) {
-            if (ymatx[ii] != -1) {
-                coors.push(new THREE.Vector2(ymatx[ii], ii));
-            }
-        }
-
-        for (var ii = coors.length - 1; ii > -1; --ii) {
-            var blah = coors[ii];
-            coors.push(new THREE.Vector2(-blah.x, blah.y));
-        }
-
-        coors.push(new THREE.Vector2(coors[0].x, coors[0].y));
-        var shape = new THREE.Shape(coors);
+        
 
         var boatGeo = new THREE.ExtrudeGeometry(shape, {amount: 200, bevelEnabled: true});
         var rotationMat = new THREE.Matrix4().makeRotationX(Math.PI);

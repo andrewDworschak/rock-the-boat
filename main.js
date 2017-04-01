@@ -431,32 +431,57 @@ $(document).ready(function () {
         boat_theta = boat_theta - water_theta;
         //var tan_theta = Math.tan(Math.abs(boat_theta));
         for (subdiv = 0; subdiv < window.ymatx.length; subdiv++) {
-            if (window.ymatx[subdiv] != -1) {
-                var d_minus = -Math.sin(boat_theta) * window.ymatx[subdiv] + Math.cos(boat_theta) * (subdiv - window.centreOfMass);
-                var d_plus = Math.sin(boat_theta) * window.ymatx[subdiv] + Math.cos(boat_theta) * (subdiv - window.centreOfMass);
-                if (d_plus != d_minus) {
-                    var d_large = Math.max(d_plus, d_minus);
-                    var d_small = Math.min(d_plus, d_minus);
-                    V = Math.max(Math.min(2 * window.ymatx[subdiv] * (d_large - h) / (d_large - d_small), 2 * window.ymatx[subdiv]), 0);
-                    if (d_plus > d_minus) {
-                        integralBx += V * (window.ymatx[subdiv] - V / 2);
-                    }
-                    else {
-                        integralBx += V * (-window.ymatx[subdiv] + V / 2);
-                    }
-                }
-                else if (d_minus < h) {
-                    V = 0;
-                }
-                else {
-                    V = 2 * window.ymatx[subdiv];
-                }
-                V_sub += V;
-                integralBy -= V * (subdiv - window.centreOfMass);
-
-            }
+			for(i=0; i<window.crossovers; i++){
+				if(window.ymatx[subdiv].length>i){
+					var d_minus = -Math.sin(boat_theta) * window.ymatx[subdiv][i] + Math.cos(boat_theta) * (subdiv - window.centreOfMass);
+					var d_plus = Math.sin(boat_theta) * window.ymatx[subdiv][i] + Math.cos(boat_theta) * (subdiv - window.centreOfMass);
+					
+					if(i%2==0){
+						if (d_plus != d_minus) {
+							var d_large = Math.max(d_plus, d_minus);
+							var d_small = Math.min(d_plus, d_minus);
+							V = Math.max(Math.min(2 * window.ymatx[subdiv][i] * (d_large - h) / (d_large - d_small), 2 * window.ymatx[subdiv][i]), 0);
+							if (d_plus > d_minus) {
+								integralBx += V * (window.ymatx[subdiv][i] - V / 2);
+							}
+							else {
+								integralBx += V * (-window.ymatx[subdiv][i] + V / 2);
+							}
+						}
+						else if (d_minus < h) {
+							V = 0;
+						}
+						else {
+							V = 2 * window.ymatx[subdiv][i];
+						}
+						V_sub += V;
+						integralBy -= V * (subdiv - window.centreOfMass);
+					}
+					else{
+						if (d_plus != d_minus) {
+							var d_large = Math.max(d_plus, d_minus);
+							var d_small = Math.min(d_plus, d_minus);
+							V = Math.max(Math.min(2 * window.ymatx[subdiv][i] * (d_large - h) / (d_large - d_small), 2 * window.ymatx[subdiv][i]), 0);
+							if (d_plus > d_minus) {
+								integralBx -= V * (window.ymatx[subdiv][i] - V / 2);
+							}
+							else {
+								integralBx -= V * (-window.ymatx[subdiv][i] + V / 2);
+							}
+						}
+						else if (d_minus < h) {
+							V = 0;
+						}
+						else {
+							V = 2 * window.ymatx[subdiv][i];
+						}
+						V_sub -= V;
+						integralBy += V * (subdiv - window.centreOfMass);
+					}
+				}
+			}
         }
-        if (V_sub == 0) {
+        if(V_sub == 0){
             B_x = 0;
             B_y = 0;
             R = 0;
@@ -479,8 +504,7 @@ $(document).ready(function () {
         speed_theta = speed_theta * (1 - damping * delta_t);
         h = h + water_h + speed_h * delta_t;
         boat_theta = boat_theta + water_theta + speed_theta * delta_t;
-        //console.log(window.Izz);
-        //console.log(window.centreOfMass);
+		//console.log(integralBy);
         //console.log(V_sub);
         //console.log(h);
         //console.log(water_h);
