@@ -49,7 +49,7 @@ $(document).ready(function () {
     var g = 10;
 
     //Situation variables
-    var fluid_density = 1.5;
+    var fluid_density = 2;
     var delta_t = 0.02;
     var lastTime = 1;
     var damping = 0.2;
@@ -185,7 +185,7 @@ $(document).ready(function () {
         event.preventDefault();
         event.stopPropagation();
 
-        fov += event.deltaY;
+        fov += event.deltaY/50;
         fov = Math.max(MIN_FOV, Math.min(MAX_FOV, fov));
         camera.fov = fov;
         camera.updateProjectionMatrix();
@@ -326,7 +326,7 @@ $(document).ready(function () {
             window.boat.rotation.z = boat_theta;
             window.boat.position.y = h;
             window.CoM.position.y = h;
-            window.BoM.position.set(Math.cos(boat_theta)*B_x+Math.sin(boat_theta)*B_y, -Math.sin(boat_theta)*B_x+Math.cos(boat_theta)*B_y+h, 110);
+            window.BoM.position.set(-Math.cos(boat_theta)*B_x-Math.sin(boat_theta)*B_y, -Math.sin(boat_theta)*B_x+Math.cos(boat_theta)*B_y+h, 110);
         }
         else {
             h = water_h;

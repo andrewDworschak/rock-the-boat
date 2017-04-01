@@ -1,5 +1,5 @@
 function drawBoat() {
-    var subdivs = 50, subdiv;
+    var subdivs = 200, subdiv;
     var centreOfMass = 0;
     var Izz = 0;
 
@@ -8,8 +8,7 @@ function drawBoat() {
 
     var ymatx = [];
     var coors = [];
-	var crossovers = 10;
-	window.crossovers = crossovers;
+	var crossovers = 0;
 	var lastSubdiv = 0;
 	var lastPos = 0;
 	var newPos = 0;
@@ -129,6 +128,12 @@ function drawBoat() {
 		for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
 			ymatx[subdiv] = ymatx[subdiv].sort(function (a, b) {  return b - a;  });
 		}
+		crossovers = 0;
+		for (i=0; i<subdivs; i++){
+			if(ymatx[i].length>crossovers){
+				crossovers = ymatx[i].length;
+			}
+		}
 
         for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
 			for(i=0; i<crossovers; i++){
@@ -164,10 +169,11 @@ function drawBoat() {
         }
         Izz = integralX + integralY;
         window.Izz = Izz;
-
+		
+		window.crossovers = crossovers;
         
 
-        var boatGeo = new THREE.ExtrudeGeometry(shape, {amount: 200, bevelEnabled: true});
+        var boatGeo = new THREE.ExtrudeGeometry(shape, {amount: 200, bevelEnabled: false});
         var rotationMat = new THREE.Matrix4().makeRotationX(Math.PI);
         var translationMat = new THREE.Matrix4().makeTranslation(0, centreOfMass, 100);
         var transformation = new THREE.Matrix4().multiplyMatrices(translationMat, rotationMat);
