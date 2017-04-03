@@ -63,7 +63,7 @@ function drawBoat() {
 
         canvas.addEventListener('touchmove', dbOnTouchMove, false);
         canvas.addEventListener('touchend', dbOnTouchEnd, false);
-        //canvas.addEventListener('touchcancel', dbOnTouchCancel, false);
+        canvas.addEventListener('touchcancel', dbOnTouchCancel, false);
 
         dbOnMouseDown(event, true, tx, ty);
     }
@@ -233,7 +233,7 @@ function drawBoat() {
         canvas.removeEventListener('touchstart', dbOnTouchStart, false);
         canvas.removeEventListener('touchmove', dbOnTouchMove, false);
         canvas.removeEventListener('touchend', dbOnTouchEnd, false);
-        //canvas.removeEventListener('touchcancel', dbOnTouchCancel, false);
+        canvas.removeEventListener('touchcancel', dbOnTouchCancel, false);
         canvas.removeEventListener('mousemove', dbOnMouseMove, false);
         canvas.removeEventListener('mouseup', dbOnMouseUp, false);
         canvas.removeEventListener('mousedown', dbOnMouseDown, false);
@@ -249,9 +249,9 @@ function drawBoat() {
         dbOnMouseUp();
     }
 
-    /*function dbOnTouchCancel() {
+    function dbOnTouchCancel() {
         dbOnTouchEnd();
-    }*/
+    }
 
     function createLineElement(x, y, length, angle) {
         var line = document.createElement("div");
