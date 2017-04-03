@@ -304,8 +304,8 @@ $(document).ready(function () {
         window.removeEventListener('mouseup', onMouseUp, false);
         window.removeEventListener('mouseout', onMouseOut, false);
         window.removeEventListener('touchmove', onTouchMove, false);
-        window.removeEventListener('touchEnd', onTouchEnd, false);
-        window.removeEventListener('touchCancel', onTouchCancel, false);
+        window.removeEventListener('touchend', onTouchEnd, false);
+        window.removeEventListener('touchcancel', onTouchCancel, false);
     }
 
     function animate() {
