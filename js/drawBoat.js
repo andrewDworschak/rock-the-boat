@@ -14,12 +14,6 @@ function drawBoat() {
     var newPos = 0;
     var drawOrder = [];
 
-    $('#boat-canvas').show();
-    $('#webGL-canvas').css('zIndex', '-1');
-
-    canvas.addEventListener('mousedown', dbOnMouseDown, false);
-    canvas.addEventListener('touchstart', dbOnTouchStart, false);
-
     if (window.boat != undefined) {
         window.scene.remove(window.boat);
         window.scene.remove(window.CoM);
@@ -32,6 +26,12 @@ function drawBoat() {
         delete window.CoM;
         delete window.BoM;
     }
+
+    $('#boat-canvas').show();
+    $('#webGL-canvas').css('zIndex', '-1');
+
+    canvas.addEventListener('mousedown', dbOnMouseDown, false);
+    canvas.addEventListener('touchstart', dbOnTouchStart, false);
 
     function dbOnMouseDown(event, touch, tx, ty) {
         event.preventDefault();
