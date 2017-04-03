@@ -230,17 +230,14 @@ function drawBoat() {
 
         $('#boat-canvas').html(' Draw, draw, draw your boat <br> Gently on the screen ');
 
-        if (touch) {
-            window.removeEventListener('touchmove', onTouchMove, false);
-            window.removeEventListener('touchEnd', onTouchEnd, false);
-            window.removeEventListener('touchCancel', onTouchCancel, false);
-        }
-        else {
-            canvas.removeEventListener('mousemove', dbOnMouseMove, false);
-            canvas.removeEventListener('mouseup', dbOnMouseUp, false);
-            canvas.removeEventListener('mousedown', dbOnMouseDown, false);
-            canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
-        }
+        canvas.removeEventListener('touchmove', dbOnTouchMove, false);
+        canvas.removeEventListener('touchEnd', dbOnTouchEnd, false);
+        canvas.removeEventListener('touchCancel', dbOnTouchCancel, false);
+        canvas.removeEventListener('mousemove', dbOnMouseMove, false);
+        canvas.removeEventListener('mouseup', dbOnMouseUp, false);
+        canvas.removeEventListener('mousedown', dbOnMouseDown, false);
+        canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
+
     }
 
     function dbOnTouchEnd() {
@@ -299,3 +296,8 @@ function drawBoat() {
         return createLineElement(x, y, c, alpha);
     }
 }
+
+$(document).ready(function () {
+    $('.draw-boat-btn').click(drawBoat);
+    $('.draw-boat-btn').on('tap', drawBoat);
+});
