@@ -298,5 +298,5 @@ function drawBoat() {
 }
 
 $(document).ready(function () {
-    $('.draw-boat-btn').on('click touch', drawBoat);
+    $('#draw-boat-btn').click(drawBoat);
 });
