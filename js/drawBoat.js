@@ -103,7 +103,7 @@ function drawBoat() {
         dbOnMouseMove(event, true, tx, ty);
     }
 
-    function dbOnMouseUp(touch) {
+    function dbOnMouseUp() {
         var sumxy = 0;
         var sumx = 0;
         var integralX = 0;
@@ -230,6 +230,7 @@ function drawBoat() {
 
         $('#boat-canvas').html(' Draw, draw, draw your boat <br> Gently on the screen ');
 
+        canvas.removeEventListener('touchstart', dbOnTouchStart, false);
         canvas.removeEventListener('touchmove', dbOnTouchMove, false);
         canvas.removeEventListener('touchend', dbOnTouchEnd, false);
         //canvas.removeEventListener('touchcancel', dbOnTouchCancel, false);
@@ -241,7 +242,7 @@ function drawBoat() {
     }
 
     function dbOnTouchEnd() {
-        dbOnMouseUp(true);
+        dbOnMouseUp();
     }
 
     function dbOnMouseLeave() {
