@@ -18,6 +18,8 @@ function drawBoat() {
     $('#webGL-canvas').css('zIndex', '-1');
 
     canvas.addEventListener('mousedown', dbOnMouseDown, false);
+    canvas.addEventListener('touchstart', dbOnTouchStart, false);
+
     if (window.boat != undefined) {
         window.scene.remove(window.boat);
         window.scene.remove(window.CoM);
@@ -31,15 +33,17 @@ function drawBoat() {
         delete window.BoM;
     }
 
-    function dbOnMouseDown(event) {
+    function dbOnMouseDown(event, touch, tx, ty) {
         event.preventDefault();
         event.stopPropagation();
-        mouse.x = event.clientX;
-        mouse.y = event.clientY;
+        mouse.x = touch ? tx : event.clientX;
+        mouse.y = touch ? ty : event.clientY;
 
-        canvas.addEventListener('mousemove', dbOnMouseMove, false);
-        canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
-        canvas.addEventListener('mouseup', dbOnMouseUp, false);
+        if (!touch) {
+            canvas.addEventListener('mousemove', dbOnMouseMove, false);
+            canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
+            canvas.addEventListener('mouseup', dbOnMouseUp, false);
+        }
 
         for (i = 0; i < subdivs; i++) {
             ymatx[i] = [];
@@ -53,13 +57,20 @@ function drawBoat() {
         //drawOrder[drawOrder.length]=subdiv;
     }
 
-    function dbOnMouseLeave() {
-        dbOnMouseUp();
+    function dbOnTouchStart(event) {
+        var tx = event.touches[0].clientX;
+        var ty = event.touches[0].clientY;
+
+        canvas.addEventListener('touchmove', dbOnTouchMove, false);
+        canvas.addEventListener('touchend', dbOnTouchEnd, false);
+        canvas.addEventListener('touchcancel', dbOnTouchCancel, false);
+
+        dbOnMouseDown(event, true, tx, ty);
     }
 
-    function dbOnMouseMove(event) {
-        mouse.x = event.clientX;
-        mouse.y = event.clientY;
+    function dbOnMouseMove(event, touch, tx, ty) {
+        mouse.x = touch ? tx : event.clientX;
+        mouse.y = touch ? ty : event.clientY;
 
         subdiv = Math.round(mouse.y * subdivs / window.innerHeight);
         if (subdiv != lastSubdiv) {
@@ -85,7 +96,14 @@ function drawBoat() {
         }
     }
 
-    function dbOnMouseUp() {
+    function dbOnTouchMove(event) {
+        var tx = event.touches[0].clientX;
+        var ty = event.touches[0].clientY;
+
+        dbOnMouseMove(event, true, tx, ty);
+    }
+
+    function dbOnMouseUp(touch) {
         var sumxy = 0;
         var sumx = 0;
         var integralX = 0;
@@ -212,10 +230,29 @@ function drawBoat() {
 
         $('#boat-canvas').html(' Draw, draw, draw your boat <br> Gently on the screen ');
 
-        canvas.removeEventListener('mousemove', dbOnMouseMove, false);
-        canvas.removeEventListener('mouseup', dbOnMouseUp, false);
-        canvas.removeEventListener('mousedown', dbOnMouseDown, false);
-        canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
+        if (touch) {
+            window.removeEventListener('touchmove', onTouchMove, false);
+            window.removeEventListener('touchEnd', onTouchEnd, false);
+            window.removeEventListener('touchCancel', onTouchCancel, false);
+        }
+        else {
+            canvas.removeEventListener('mousemove', dbOnMouseMove, false);
+            canvas.removeEventListener('mouseup', dbOnMouseUp, false);
+            canvas.removeEventListener('mousedown', dbOnMouseDown, false);
+            canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
+        }
+    }
+
+    function dbOnTouchEnd() {
+        dbOnMouseUp(true);
+    }
+
+    function dbOnMouseLeave() {
+        dbOnMouseUp();
+    }
+
+    function dbOnTouchCancel() {
+        dbOnTouchEnd();
     }
 
     function createLineElement(x, y, length, angle) {
