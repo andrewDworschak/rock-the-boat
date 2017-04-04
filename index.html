@@ -5,7 +5,6 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="shortcut icon" href="anchor.png" />
-		<link href="css/bootstrap.min.css" rel="stylesheet" />
 		<style>
 			body {
 				color: #000;
@@ -18,13 +17,6 @@
 			a {
 				color: #a06851;
 			}
-
-            #draw-boat-btn {
-                position: absolute;
-                bottom: 10px;
-                right: 10px;
-                z-index: 10;
-            }
 
 			#webGL-canvas {
 				position: absolute;
@@ -41,6 +33,10 @@
 				z-index: 10;
 				color: black;
             }
+
+			div.dg {
+				z-index: 1 !important;
+			}
 		</style>
 	</head>
 	<body>
@@ -49,13 +45,13 @@
 		<script src="js/watershader.js"></script>
 		<script src="js/detector.js"></script>
 		<script src="js/stats.min.js"></script>
+		<script src="js/dat.gui.min.js"></script>
 
 		<script src="js/jquery.min.js"></script>
 		<script src="js/drawBoat.js"></script>
 
         <script src="main.js"></script>
 
-        <button type="button" class="btn btn-default" id="draw-boat-btn">Draw</button>
 		<div id="webGL-canvas"></div>
         <div id="boat-canvas"> Draw, draw, draw your boat <br> Gently on the screen </div>
 	</body>
