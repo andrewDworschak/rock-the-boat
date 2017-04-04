@@ -8,16 +8,12 @@ function drawBoat() {
 
     var ymatx = [];
     var coors = [];
-	var crossovers = 0;
-	var lastSubdiv = 0;
-	var lastPos = 0;
-	var newPos = 0;
-	var drawOrder = [];
+    var crossovers = 0;
+    var lastSubdiv = 0;
+    var lastPos = 0;
+    var newPos = 0;
+    var drawOrder = [];
 
-    $('#boat-canvas').show();
-    $('#webGL-canvas').css('zIndex', '-1');
-
-    canvas.addEventListener('mousedown', dbOnMouseDown, false);
     if (window.boat != undefined) {
         window.scene.remove(window.boat);
         window.scene.remove(window.CoM);
@@ -31,58 +27,80 @@ function drawBoat() {
         delete window.BoM;
     }
 
-    function dbOnMouseDown(event) {
+    $('#boat-canvas').show();
+    $('#webGL-canvas').css('zIndex', '-1');
+
+    canvas.addEventListener('mousedown', dbOnMouseDown, false);
+    canvas.addEventListener('touchstart', dbOnTouchStart, false);
+
+    function dbOnMouseDown(event, touch, tx, ty) {
         event.preventDefault();
         event.stopPropagation();
-        mouse.x = event.clientX;
-        mouse.y = event.clientY;
+        mouse.x = touch ? tx : event.clientX;
+        mouse.y = touch ? ty : event.clientY;
 
-        canvas.addEventListener('mousemove', dbOnMouseMove, false);
-        canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
-        canvas.addEventListener('mouseup', dbOnMouseUp, false);
+        if (!touch) {
+            canvas.addEventListener('mousemove', dbOnMouseMove, false);
+            canvas.addEventListener('mouseleave', dbOnMouseLeave, false);
+            canvas.addEventListener('mouseup', dbOnMouseUp, false);
+        }
 
-        for (i=0; i<subdivs; i++){
-			ymatx[i]= [];
-		}
+        for (i = 0; i < subdivs; i++) {
+            ymatx[i] = [];
+        }
         coors = [];
         var subdiv = Math.round(mouse.y * subdivs / window.innerHeight);
-        
-		lastPos = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
-		//ymatx[subdiv][ymatx[subdiv].length] = lastPos;
-		lastSubdiv = subdiv;
-		//drawOrder[drawOrder.length]=subdiv;
+
+        lastPos = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
+        //ymatx[subdiv][ymatx[subdiv].length] = lastPos;
+        lastSubdiv = subdiv;
+        //drawOrder[drawOrder.length]=subdiv;
     }
 
-    function dbOnMouseLeave() {
-        dbOnMouseUp();
+    function dbOnTouchStart(event) {
+        var tx = event.touches[0].clientX;
+        var ty = event.touches[0].clientY;
+
+        canvas.addEventListener('touchmove', dbOnTouchMove, false);
+        canvas.addEventListener('touchend', dbOnTouchEnd, false);
+        canvas.addEventListener('touchcancel', dbOnTouchCancel, false);
+
+        dbOnMouseDown(event, true, tx, ty);
     }
 
-    function dbOnMouseMove(event) {
-        mouse.x = event.clientX;
-        mouse.y = event.clientY;
+    function dbOnMouseMove(event, touch, tx, ty) {
+        mouse.x = touch ? tx : event.clientX;
+        mouse.y = touch ? ty : event.clientY;
 
         subdiv = Math.round(mouse.y * subdivs / window.innerHeight);
         if (subdiv != lastSubdiv) {
             newPos = Math.abs((mouse.x - window.innerWidth / 2) * subdivs / window.innerHeight);
-			if(lastSubdiv>subdiv){
-				for(i=lastSubdiv-1; i>=subdiv; i--){
-					ymatx[i][ymatx[i].length]=lastPos*(i-subdiv)/(lastSubdiv-subdiv) + newPos*(lastSubdiv-i)/(lastSubdiv-subdiv);
-					drawOrder[drawOrder.length]=i;
-				}
-			}
-			else{
-				for(i=lastSubdiv+1; i<=subdiv; i++){
-					ymatx[i][ymatx[i].length]=lastPos*(subdiv-i)/(subdiv-lastSubdiv) + newPos*(i-lastSubdiv)/(subdiv-lastSubdiv);
-					drawOrder[drawOrder.length]=i;
-				}
-				
-			}
-            
+            if (lastSubdiv > subdiv) {
+                for (i = lastSubdiv - 1; i >= subdiv; i--) {
+                    ymatx[i][ymatx[i].length] = lastPos * (i - subdiv) / (lastSubdiv - subdiv) + newPos * (lastSubdiv - i) / (lastSubdiv - subdiv);
+                    drawOrder[drawOrder.length] = i;
+                }
+            }
+            else {
+                for (i = lastSubdiv + 1; i <= subdiv; i++) {
+                    ymatx[i][ymatx[i].length] = lastPos * (subdiv - i) / (subdiv - lastSubdiv) + newPos * (i - lastSubdiv) / (subdiv - lastSubdiv);
+                    drawOrder[drawOrder.length] = i;
+                }
+
+            }
+
             canvas.appendChild(createLine(newPos * window.innerHeight / subdivs + window.innerWidth / 2, subdiv * window.innerHeight / subdivs, lastPos * window.innerHeight / subdivs + window.innerWidth / 2, lastSubdiv * window.innerHeight / subdivs));
             canvas.appendChild(createLine(-newPos * window.innerHeight / subdivs + window.innerWidth / 2, subdiv * window.innerHeight / subdivs, -lastPos * window.innerHeight / subdivs + window.innerWidth / 2, lastSubdiv * window.innerHeight / subdivs));
-			lastPos = newPos;
-			lastSubdiv = subdiv;
+            lastPos = newPos;
+            lastSubdiv = subdiv;
         }
+    }
+
+    function dbOnTouchMove(event) {
+        var tx = event.touches[0].clientX;
+        var ty = event.touches[0].clientY;
+
+        dbOnMouseMove(event, true, tx, ty);
     }
 
     function dbOnMouseUp() {
@@ -90,88 +108,90 @@ function drawBoat() {
         var sumx = 0;
         var integralX = 0;
         var integralY = 0;
-		
-		for (i = 0; i < drawOrder.length; i++) {
+
+        for (i = 0; i < drawOrder.length; i++) {
             var numRepeats = 0;
-			for(j=0; j<i; j++){
-				if(drawOrder[i]==drawOrder[j]){
-					numRepeats++;
-				}
-			}
-			//console.log(ymatx);
-			if(numRepeats!=0){
-				//console.log(numRepeats);
-			}
-			//console.log(drawOrder.length);
+            for (j = 0; j < i; j++) {
+                if (drawOrder[i] == drawOrder[j]) {
+                    numRepeats++;
+                }
+            }
+            //console.log(ymatx);
+            if (numRepeats != 0) {
+                //console.log(numRepeats);
+            }
+            //console.log(drawOrder.length);
             coors.push(new THREE.Vector2(ymatx[drawOrder[i]][numRepeats], drawOrder[i]));
         }
-		//console.log(coors);
-		//console.log(drawOrder);
-		for (var ii = 0; ii > coors.length; ++ii) {
+        //console.log(coors);
+        //console.log(drawOrder);
+        for (var ii = 0; ii > coors.length; ++ii) {
             for (var jj = 0; jj < i; ++jj) {
-            if(coors[ii].y == coors[jj].y){
-				coors.splice(ii,1);
-				console.log("eep");
-				break;
-			}
-			}			
+                if (coors[ii].y == coors[jj].y) {
+                    coors.splice(ii, 1);
+                    console.log("eep");
+                    break;
+                }
+            }
         }
-		
+
         for (var ii = coors.length - 1; ii > -1; --ii) {
             var blah = coors[ii];
             coors.push(new THREE.Vector2(-blah.x, blah.y));
         }
-		
-		coors.push(new THREE.Vector2(coors[0].x, coors[0].y));
+
+        coors.push(new THREE.Vector2(coors[0].x, coors[0].y));
         var shape = new THREE.Shape(coors);
-		
-		for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
-			ymatx[subdiv] = ymatx[subdiv].sort(function (a, b) {  return b - a;  });
-		}
-		crossovers = 0;
-		for (i=0; i<subdivs; i++){
-			if(ymatx[i].length>crossovers){
-				crossovers = ymatx[i].length;
-			}
-		}
 
         for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
-			for(i=0; i<crossovers; i++){
-				if(ymatx[subdiv].length>i){
-					if(i%2==0){
-						sumxy += ymatx[subdiv][i] * subdiv;
-						sumx += ymatx[subdiv][i];
-						integralX += 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
-					}
-					else{
-						sumxy -= ymatx[subdiv][i] * subdiv;
-						sumx -= ymatx[subdiv][i];
-						integralX -= 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
-					}
-				}
-			}
+            ymatx[subdiv] = ymatx[subdiv].sort(function (a, b) {
+                return b - a;
+            });
+        }
+        crossovers = 0;
+        for (i = 0; i < subdivs; i++) {
+            if (ymatx[i].length > crossovers) {
+                crossovers = ymatx[i].length;
+            }
+        }
+
+        for (subdiv = 0; subdiv < subdivs - 1; subdiv++) {
+            for (i = 0; i < crossovers; i++) {
+                if (ymatx[subdiv].length > i) {
+                    if (i % 2 == 0) {
+                        sumxy += ymatx[subdiv][i] * subdiv;
+                        sumx += ymatx[subdiv][i];
+                        integralX += 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
+                    }
+                    else {
+                        sumxy -= ymatx[subdiv][i] * subdiv;
+                        sumx -= ymatx[subdiv][i];
+                        integralX -= 2 * Math.pow(ymatx[subdiv][i], 3) / 3;
+                    }
+                }
+            }
         }
         centreOfMass = sumxy / sumx;
         window.centreOfMass = centreOfMass;
         window.volume = sumx;
 
         for (subdiv = 0; subdiv < subdivs; subdiv++) {
-			for(i=0; i<crossovers; i++){
-				if(ymatx[subdiv].length>i){
-					if(i%2==0){
-						integralY += 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
-					}
-					else{
-						integralY -= 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
-					}
-				}
-			}
+            for (i = 0; i < crossovers; i++) {
+                if (ymatx[subdiv].length > i) {
+                    if (i % 2 == 0) {
+                        integralY += 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
+                    }
+                    else {
+                        integralY -= 2 * ymatx[subdiv][i] * Math.pow((subdiv - centreOfMass), 2);
+                    }
+                }
+            }
         }
         Izz = integralX + integralY;
         window.Izz = Izz;
-		
-		window.crossovers = crossovers;
-        
+
+        window.crossovers = crossovers;
+
 
         var boatGeo = new THREE.ExtrudeGeometry(shape, {amount: 200, bevelEnabled: false});
         var rotationMat = new THREE.Matrix4().makeRotationX(Math.PI);
@@ -186,6 +206,7 @@ function drawBoat() {
             shininess: 75,
             specular: 0xaaaaaa
         }));
+        boatMesh.material.side = THREE.DoubleSide;
         var boat = new THREE.Object3D();
         boat.add(boatMesh);
         window.boat = boat;
@@ -209,10 +230,27 @@ function drawBoat() {
 
         $('#boat-canvas').html(' Draw, draw, draw your boat <br> Gently on the screen ');
 
+        canvas.removeEventListener('touchstart', dbOnTouchStart, false);
+        canvas.removeEventListener('touchmove', dbOnTouchMove, false);
+        canvas.removeEventListener('touchend', dbOnTouchEnd, false);
+        canvas.removeEventListener('touchcancel', dbOnTouchCancel, false);
         canvas.removeEventListener('mousemove', dbOnMouseMove, false);
         canvas.removeEventListener('mouseup', dbOnMouseUp, false);
         canvas.removeEventListener('mousedown', dbOnMouseDown, false);
         canvas.removeEventListener('mouseleave', dbOnMouseLeave, false);
+
+    }
+
+    function dbOnTouchEnd() {
+        dbOnMouseUp();
+    }
+
+    function dbOnMouseLeave() {
+        dbOnMouseUp();
+    }
+
+    function dbOnTouchCancel() {
+        dbOnTouchEnd();
     }
 
     function createLineElement(x, y, length, angle) {
@@ -259,3 +297,7 @@ function drawBoat() {
         return createLineElement(x, y, c, alpha);
     }
 }
+
+$(document).ready(function () {
+    $('#draw-boat-btn').on('click touchend', drawBoat);
+});

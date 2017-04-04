@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - geometry - terrain</title>
+		<title>rock-the-boat</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="shortcut icon" href="anchor.png" />
+		<link href="css/bootstrap.min.css" rel="stylesheet" />
 		<style>
 			body {
 				color: #000;
@@ -13,18 +15,11 @@
 				overflow: hidden;
 			}
 
-			#info {
-				position: absolute;
-				top: 0px; width: 100%;
-				text-align:center;
-				padding: 5px;
-			}
-
 			a {
 				color: #a06851;
 			}
 
-            .draw-boat-btn {
+            #draw-boat-btn {
                 position: absolute;
                 bottom: 10px;
                 right: 10px;
@@ -60,7 +55,7 @@
 
         <script src="main.js"></script>
 
-        <button type="button" class="draw-boat-btn" onclick="drawBoat()">Draw</button>
+        <button type="button" class="btn btn-default" id="draw-boat-btn">Draw</button>
 		<div id="webGL-canvas"></div>
         <div id="boat-canvas"> Draw, draw, draw your boat <br> Gently on the screen </div>
 	</body>
