@@ -49,12 +49,13 @@ $(document).ready(function () {
     var g = 10;
 
     //Situation variables
-    var fluid_density = 2;
+    var fluid_density = 5;
     var delta_t = 0.02;
     var lastTime = 1;
     var damping = 0.2;
     var water_h = 0;
     var water_theta = 0;
+	var boat_density = 2.5;
 
 
     var parameters = {
@@ -493,10 +494,10 @@ $(document).ready(function () {
 
         }
         var buoyant_force = V_sub * fluid_density;
-        net_force = 10 * (buoyant_force - 2 * window.volume);
+        net_force = 10 * (buoyant_force - 2 * boat_density * window.volume)/boat_density;
         accel_h = net_force / window.volume;
         net_torque = 200 * buoyant_force * R;
-        accel_theta = net_torque / window.Izz;
+        accel_theta = net_torque / window.Izz / boat_density;
 
         speed_h = speed_h + accel_h * delta_t;
         speed_theta = (speed_theta + accel_theta * delta_t);
