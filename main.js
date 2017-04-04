@@ -8,7 +8,6 @@ $(document).ready(function () {
 
     var container;
     var camera, scene, renderer;
-    var sphere;
 
     var water;
     var mirrorMesh;
@@ -49,14 +48,24 @@ $(document).ready(function () {
     var g = 10;
 
     //Situation variables
-    var fluid_density = 5;
+    var fluid_density = 1;
     var delta_t = 0.02;
     var lastTime = 1;
-    var damping = 0.2;
     var water_h = 0;
     var water_theta = 0;
-	var boat_density = 2.5;
-
+    var gui = new dat.GUI();
+    var params = new function() {
+        this.Damping = 0.2;
+        this.Density = 0.5;
+        this.Draw = function() {drawBoat();};
+        this.Power = 0.5;
+        this.Perturb = function() {perturbBoat();};
+    };
+    gui.add(params, 'Damping', 0, 1);
+    gui.add(params, 'Density', 0.1, 1);
+    gui.add(params, 'Draw');
+    gui.add(params, 'Power', 0, 1);
+    gui.add(params, 'Perturb');
 
     var parameters = {
         width: 2000,
@@ -494,15 +503,15 @@ $(document).ready(function () {
 
         }
         var buoyant_force = V_sub * fluid_density;
-        net_force = 10 * (buoyant_force - 2 * boat_density * window.volume)/boat_density;
+        net_force = 10 * (buoyant_force - 2 * params.Density * window.volume) / params.Density;
         accel_h = net_force / window.volume;
         net_torque = 200 * buoyant_force * R;
-        accel_theta = net_torque / window.Izz / boat_density;
+        accel_theta = net_torque / window.Izz / params.Density;
 
         speed_h = speed_h + accel_h * delta_t;
         speed_theta = (speed_theta + accel_theta * delta_t);
-        speed_h = speed_h * (1 - damping * delta_t);
-        speed_theta = speed_theta * (1 - damping * delta_t);
+        speed_h = speed_h * (1 - params.Damping * delta_t);
+        speed_theta = speed_theta * (1 - params.Damping * delta_t);
         h = h + water_h + speed_h * delta_t;
         boat_theta = boat_theta + water_theta + speed_theta * delta_t;
         //console.log(integralBy);
@@ -512,5 +521,10 @@ $(document).ready(function () {
         //console.log(water_theta);
         //console.log(boat_theta);
         //console.log(window.volume);
+    }
+
+    function perturbBoat() {
+        speed_h -= params.Power * 40;
+        speed_theta += params.Power * 0.3;
     }
 });
