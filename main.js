@@ -175,10 +175,10 @@ $(document).ready(function () {
         scene.add(skyBox);
 
 
-        window.addEventListener('mousedown', onMouseDown, false);
-        window.addEventListener('touchstart', onTouchStart, false);
-        window.addEventListener('wheel', onWheel, false);
-        window.addEventListener('resize', onWindowResize, false);
+        container.addEventListener('mousedown', onMouseDown, false);
+        container.addEventListener('touchstart', onTouchStart, false);
+        container.addEventListener('wheel', onWheel, false);
+        container.addEventListener('resize', onWindowResize, false);
     }
 
     function onWindowResize() {
@@ -204,9 +204,9 @@ $(document).ready(function () {
     function onMouseDown(event) {
         mouseDown = true;
 
-        window.addEventListener('mousemove', onMouseMove, false);
-        window.addEventListener('mouseup', onMouseUp, false);
-        window.addEventListener('mouseout', onMouseOut, false);
+        container.addEventListener('mousemove', onMouseMove, false);
+        container.addEventListener('mouseup', onMouseUp, false);
+        container.addEventListener('mouseout', onMouseOut, false);
 
         mouse.x = event.clientX;
         mouse.y = event.clientY;
@@ -233,9 +233,9 @@ $(document).ready(function () {
             touch.y = event.touches[0].clientY;
         }
 
-        window.addEventListener('touchmove', onTouchMove, false);
-        window.addEventListener('touchend', onTouchEnd, false);
-        window.addEventListener('touchcancel', onTouchCancel, false);
+        container.addEventListener('touchmove', onTouchMove, false);
+        container.addEventListener('touchend', onTouchEnd, false);
+        container.addEventListener('touchcancel', onTouchCancel, false);
     }
 
     function onMouseMove(event) {
@@ -310,12 +310,12 @@ $(document).ready(function () {
         deltaTheta = 0;
         deltaPhi = 0;
 
-        window.removeEventListener('mousemove', onMouseMove, false);
-        window.removeEventListener('mouseup', onMouseUp, false);
-        window.removeEventListener('mouseout', onMouseOut, false);
-        window.removeEventListener('touchmove', onTouchMove, false);
-        window.removeEventListener('touchend', onTouchEnd, false);
-        window.removeEventListener('touchcancel', onTouchCancel, false);
+        container.removeEventListener('mousemove', onMouseMove, false);
+        container.removeEventListener('mouseup', onMouseUp, false);
+        container.removeEventListener('mouseout', onMouseOut, false);
+        container.removeEventListener('touchmove', onTouchMove, false);
+        container.removeEventListener('touchend', onTouchEnd, false);
+        container.removeEventListener('touchcancel', onTouchCancel, false);
     }
 
     function animate() {
