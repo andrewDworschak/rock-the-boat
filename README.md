@@ -1,5 +1,6 @@
 # [rock-the-boat](https://andrewdworschak.github.io/rock-the-boat)
 Our final project for Physics 350, Applications of Classical Mechanics at the University of British Columbia.
+
 **rock-the-boat is a simulation engine that uses Lagrangian mechanics to simulate the stability of a floating hull.**
 
 ### Screenshot
@@ -13,4 +14,5 @@ Our final project for Physics 350, Applications of Classical Mechanics at the Un
 - **Perturb**: Nudge the boat with a specified power.
 
 **[Visit our website](https://andrewdworschak.github.io/rock-the-boat) now to use the tool.**
+
 Created by Andrew Dworschak, Rahat Dhande, Justin Kang, Jacob Budzis & Alex Swift-Scott.
