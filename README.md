@@ -1,8 +1,10 @@
 # [rock-the-boat](https://andrewdworschak.github.io/rock-the-boat)
 Our final project for Physics 350, Applications of Classical Mechanics at the University of British Columbia.
 **rock-the-boat is a simulation engine that uses Lagrangian mechanics to simulate the stability of a floating hull.**
+
 ### Screenshot
 ![Screenshot](img/screenshot.png)
+
 ### Functionality
 - **Damping**: Control the amount of friction force the boat experiences.
 - **Density**: Control the density of the boat relative to the water.
